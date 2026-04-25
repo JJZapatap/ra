@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Showroom AR - Chevrolet C10 Cyberpunk</title>
+  
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-color: #000; }
+
+    /* Interfaz de Control Futurista */
+    .hud-container {
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      width: 90%; max-width: 400px; background: rgba(0, 10, 25, 0.85);
+      border: 1px solid #00f3ff; border-radius: 12px; padding: 15px; z-index: 1000;
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); backdrop-filter: blur(8px); text-align: center;
+    }
+
+    h1 { color: #00f3ff; font-size: 1.1rem; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px #00f3ff; }
+
+    .btn-cyber {
+      background: #001845; color: #fff; border: 2px solid #00f3ff; padding: 12px 20px;
+      font-size: 0.9rem; font-weight: bold; border-radius: 8px; cursor: pointer;
+      text-transform: uppercase; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); width: 100%;
+    }
+
+    .btn-cyber:active { background: #00f3ff; color: #000; box-shadow: 0 0 30px #00f3ff; transform: scale(0.95); }
+  </style>
+</head>
+
+<body>
+
+  <div class="hud-container">
+    <h1>Vehículo Detectado: C10 '63</h1>
+    <button class="btn-cyber" id="btn-action">⚡ Activar Modo Exhibición</button>
+  </div>
+
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
+    
+    <!-- 1. GESTOR DE ASSETS (Aquí cargamos tu modelo 3D localmente) -->
+    <a-assets>
+      <a-asset-item id="chevy-model" src="chevrolet.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- 2. EL MARCADOR AR -->
+    <a-marker preset="hiro">
+      
+      <!-- CONTENEDOR DEL VEHÍCULO -->
+      <a-entity id="showroom-rig" position="0 0 0">
+        
+        <!-- Tu Camioneta Chevrolet (Ajusta el 'scale' si sale muy grande o pequeña) -->
+        <a-entity 
+          id="car"
+          gltf-model="#chevy-model" 
+          position="0 0.5 0" 
+          scale="0.8 0.8 0.8" 
+          rotation="0 -90 0">
+        </a-entity>
+
+        <!-- Plataforma Holográfica Base -->
+        <a-ring position="0 0.05 0" rotation="-90 0 0" radius-inner="1.2" radius-outer="1.3" color="#0055ff" material="emissive: #00f3ff; emissiveIntensity: 0.5; transparent: true; opacity: 0.8"></a-ring>
+        <a-cylinder position="0 0 0" radius="1.2" height="0.05" color="#000a1a" material="opacity: 0.8; transparent: true"></a-cylinder>
+
+        <!-- Luz de Chasis (Underglow) Oculta por defecto -->
+        <a-cylinder id="underglow" position="0 0.1 0" radius="1.1" height="0.1" color="#00f3ff" material="emissive: #00f3ff; transparent: true; opacity: 0"></a-cylinder>
+      </a-entity>
+
+    </a-marker>
+
+    <!-- Cámara -->
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <!-- LÓGICA DE INTERACTIVIDAD -->
+  <script>
+    const btnAction = document.getElementById('btn-action');
+    const showroomRig = document.getElementById('showroom-rig');
+    const underglow = document.getElementById('underglow');
+    let isShowcaseMode = false;
+
+    btnAction.addEventListener('click', () => {
+      if (!isShowcaseMode) {
+        // ACTIVA MODO EXHIBICIÓN: La camioneta empieza a girar y se enciende la luz de chasis
+        showroomRig.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear');
+        underglow.setAttribute('animation', 'property: material.opacity; to: 0.6; dur: 1000; easing: easeOutQuad');
+        
+        btnAction.innerHTML = "🛑 Detener Sistema";
+        btnAction.style.borderColor = "#ff0055";
+        btnAction.style.boxShadow = "0 0 20px #ff0055";
+      } else {
+        // DETIENE EL SISTEMA
+        showroomRig.removeAttribute('animation');
+        underglow.setAttribute('animation', 'property: material.opacity; to: 0; dur: 1000; easing: easeOutQuad');
+
+        btnAction.innerHTML = "⚡ Activar Modo Exhibición";
+        btnAction.style.borderColor = "#00f3ff";
+        btnAction.style.boxShadow = "0 0 10px rgba(0, 243, 255, 0.2)";
+      }
+      isShowcaseMode = !isShowcaseMode;
+    });
+  </script>
+
+</body>
+</html>
